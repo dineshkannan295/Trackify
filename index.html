@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Job Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+      .status-Query { background:#fff3cd; }
+      .status-Pending { background:#f8d7da; }
+      .status-Complete { background:#d4edda; }
+    </style>
+  </head>
+  <body class="bg-light">
+    <div class="container py-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3">Job Tracker</h1>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">+ Add Job</button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover bg-white">
+          <thead class="table-light">
+            <tr>
+              <th>Job Ref No</th>
+              <th>Importer Name</th>
+              <th>Received Time</th>
+              <th>Status</th>
+              <th>Query Details</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for job in jobs %}
+            <tr class="status-{{ job['status'] }}">
+              <td>{{ job['job_ref'] }}</td>
+              <td>{{ job['importer_name'] }}</td>
+              <td>{{ job['received_time'] }}</td>
+              <td>{{ job['status'] }}</td>
+              <td>{% if job['status'] == 'Query' %}{{ job['query_details'] }}{% endif %}</td>
+              <td>
+                <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('edit_job', job_id=job['id']) }}">Edit</a>
+                <form method="post" action="{{ url_for('delete_job', job_id=job['id']) }}" style="display:inline" onsubmit="return confirm('Delete this job?')">
+                  <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-center">No jobs yet. Add one!</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Add Modal -->
+    <div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <form class="modal-content" method="post" action="{{ url_for('add_job') }}">
+          <div class="modal-header">
+            <h5 class="modal-title">Add Job</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-2">
+              <label class="form-label">Job Ref No</label>
+              <input name="job_ref" class="form-control" required>
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Importer Name</label>
+              <input name="importer_name" class="form-control">
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Received Time (leave empty for now)</label>
+              <input name="received_time" class="form-control" placeholder="YYYY-MM-DD HH:MM:SS">
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Status</label>
+              <select name="status" class="form-select" id="statusSelect" onchange="toggleQuery(this.value)">
+                <option>Pending</option>
+                <option>Query</option>
+                <option>Complete</option>
+              </select>
+            </div>
+            <div class="mb-2" id="queryDiv" style="display:none">
+              <label class="form-label">Query Details</label>
+              <textarea name="query_details" class="form-control"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+            <button class="btn btn-primary" type="submit">Add</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      function toggleQuery(val){
+        document.getElementById('queryDiv').style.display = (val === 'Query') ? 'block' : 'none';
+      }
+      // Keep modal open for validation errors if needed in future
+    </script>
+  </body>
+</html>
